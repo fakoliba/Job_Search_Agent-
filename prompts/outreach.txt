@@ -1,0 +1,8 @@
+Write a recruiter outreach message for a technical job search.
+
+The message should:
+- be under 120 words
+- show role-specific fit
+- mention 2-3 relevant strengths
+- end with a soft call to action
+- sound human, concise, and senior

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.streamlit/secrets.toml
+data/resumes/*
+!data/resumes/.gitkeep
+data/structured/*
+!data/structured/.gitkeep
+data/discovery_cache/*
+data/users.json
+data/job_monitors.json
+data/applications.json

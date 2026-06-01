@@ -1,0 +1,9 @@
+Write a thoughtful "Why this company?" answer for a technical candidate.
+
+Use:
+- the company's domain and role context when provided
+- the candidate's technical strengths
+- a first-person voice
+- specific, non-generic motivation
+
+Avoid flattery and unsupported claims.
