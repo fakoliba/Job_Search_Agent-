@@ -759,9 +759,6 @@ elif page == "Resume Library":
                     st.success("Resume version deleted.")
                     st.rerun()
 
-            st.subheader("Structured JSON")
-            st.json(selected, expanded=False)
-
         if len(resumes) >= 2:
             st.divider()
             st.subheader("Compare Resume Versions")
