@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
+from string import Template
 
 import streamlit as st
 
@@ -53,6 +54,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+
+THEME_OPTIONS = ["Light", "Dark"]
+if "theme_mode" not in st.session_state:
+    st.session_state["theme_mode"] = "Light"
 
 
 def get_resume_label(resume: dict) -> str:
@@ -201,11 +207,51 @@ def render_resume_comparison(left_resume: dict, right_resume: dict) -> None:
     render_skill_chips(shared_skills[:30], "No shared skills found between these versions.", "match")
 
 
-st.markdown(
+theme_mode = st.session_state.get("theme_mode", "Light")
+if theme_mode == "Dark":
+    theme_tokens = {
+        "app_bg": "#0f172a",
+        "surface": "#111827",
+        "surface_muted": "#1f2937",
+        "text": "#e5e7eb",
+        "muted": "#cbd5e1",
+        "border": "#334155",
+        "soft_border": "#475569",
+        "selected_bg": "#1e3a8a",
+        "selected_border": "#3b82f6",
+        "shadow": "0 1px 2px rgba(0, 0, 0, 0.25)",
+        "chip_match_bg": "#14532d",
+        "chip_match_border": "#22c55e",
+        "chip_gap_bg": "#7f1d1d",
+        "chip_gap_border": "#ef4444",
+        "status_bg": "#1f2937",
+        "status_text": "#e5e7eb",
+    }
+else:
+    theme_tokens = {
+        "app_bg": "#f8fafc",
+        "surface": "#ffffff",
+        "surface_muted": "#f8fafc",
+        "text": "#0f172a",
+        "muted": "#475569",
+        "border": "#e2e8f0",
+        "soft_border": "#cbd5e1",
+        "selected_bg": "#eef6ff",
+        "selected_border": "#bfdbfe",
+        "shadow": "0 1px 2px rgba(16, 24, 40, 0.04)",
+        "chip_match_bg": "#dcfce7",
+        "chip_match_border": "#86efac",
+        "chip_gap_bg": "#fee2e2",
+        "chip_gap_border": "#fca5a5",
+        "status_bg": "#f8fafc",
+        "status_text": "#334155",
+    }
+
+theme_css = Template(
     """
     <style>
     .stApp {
-        background: #f8fafc;
+        background: $app_bg;
     }
     .block-container {
         max-width: 1280px;
@@ -213,11 +259,11 @@ st.markdown(
         padding-bottom: 2.4rem;
     }
     h1, h2, h3 {
-        color: #0f172a;
+        color: $text;
         letter-spacing: 0;
     }
     .page-header {
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid $border;
         margin-bottom: 1.15rem;
         padding-bottom: 0.85rem;
     }
@@ -227,42 +273,42 @@ st.markdown(
         margin: 0;
     }
     .page-header p {
-        color: #475569;
+        color: $muted;
         font-size: 0.98rem;
         line-height: 1.5;
         margin: 0.45rem 0 0;
         max-width: 840px;
     }
     [data-testid="stMetric"] {
-        background: #ffffff;
-        border: 1px solid #e6e8ec;
+        background: $surface;
+        border: 1px solid $border;
         border-radius: 8px;
         padding: 14px 16px;
-        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        box-shadow: $shadow;
     }
     [data-testid="stMetric"] * {
-        color: #0f172a;
+        color: $text;
     }
     [data-testid="stMetricLabel"] p {
-        color: #475569;
+        color: $muted;
     }
     [data-testid="stMetricValue"] {
-        color: #0f172a;
+        color: $text;
     }
     [data-testid="stSidebar"],
     [data-testid="stSidebar"] > div {
-        background: #ffffff;
+        background: $surface;
     }
     [data-testid="stSidebar"] * {
-        color: #0f172a;
+        color: $text;
     }
     [data-testid="stSidebar"] p,
     [data-testid="stSidebar"] label,
     [data-testid="stSidebar"] span {
-        color: #0f172a;
+        color: $text;
     }
     [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-        color: #475569;
+        color: $muted;
     }
     [data-testid="stSidebar"] div[role="radiogroup"] label {
         border-radius: 8px;
@@ -270,11 +316,11 @@ st.markdown(
         margin-bottom: 0.15rem;
     }
     [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-        background: #eef6ff;
-        border: 1px solid #bfdbfe;
+        background: $selected_bg;
+        border: 1px solid $selected_border;
     }
     .section-note {
-        color: #64748b;
+        color: $muted;
         font-size: 0.94rem;
         margin-top: -0.4rem;
         margin-bottom: 1rem;
@@ -294,51 +340,51 @@ st.markdown(
         line-height: 1;
         padding: 0.45rem 0.65rem;
         border: 1px solid transparent;
-        color: #0f172a;
+        color: $text;
     }
     .skill-chip-match {
-        background: #dcfce7;
-        border-color: #86efac;
+        background: $chip_match_bg;
+        border-color: $chip_match_border;
     }
     .skill-chip-gap {
-        background: #fee2e2;
-        border-color: #fca5a5;
+        background: $chip_gap_bg;
+        border-color: $chip_gap_border;
     }
     .analysis-panel {
-        background: #ffffff;
-        border: 1px solid #e6e8ec;
+        background: $surface;
+        border: 1px solid $border;
         border-radius: 8px;
         padding: 1rem;
         min-height: 8rem;
-        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        box-shadow: $shadow;
     }
     .analysis-panel-title {
-        color: #0f172a;
+        color: $text;
         font-size: 0.95rem;
         font-weight: 700;
         margin-bottom: 0.45rem;
     }
     .analysis-panel p,
     .empty-note {
-        color: #334155;
+        color: $muted;
         font-size: 0.94rem;
         line-height: 1.45;
         margin: 0;
     }
     .empty-state {
-        background: #ffffff;
-        border: 1px dashed #cbd5e1;
+        background: $surface;
+        border: 1px dashed $soft_border;
         border-radius: 8px;
         padding: 1.15rem;
         margin: 0.55rem 0 1rem;
     }
     .empty-state-title {
-        color: #0f172a;
+        color: $text;
         font-weight: 750;
         margin-bottom: 0.35rem;
     }
     .empty-state p {
-        color: #475569;
+        color: $muted;
         line-height: 1.5;
         margin: 0 0 0.65rem;
     }
@@ -346,9 +392,9 @@ st.markdown(
         display: inline-flex;
         align-items: center;
         border-radius: 999px;
-        border: 1px solid #cbd5e1;
-        color: #334155;
-        background: #f8fafc;
+        border: 1px solid $soft_border;
+        color: $status_text;
+        background: $status_bg;
         font-size: 0.78rem;
         font-weight: 700;
         line-height: 1;
@@ -366,17 +412,29 @@ st.markdown(
         color: #92400e;
     }
     .status-muted {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-        color: #475569;
+        background: $surface_muted;
+        border-color: $soft_border;
+        color: $muted;
     }
     div[data-testid="stDataFrame"] {
-        border: 1px solid #e2e8f0;
+        border: 1px solid $border;
         border-radius: 8px;
         overflow: hidden;
     }
+    .stMarkdown, .stText, p, li, label {
+        color: $text;
+    }
+    input, textarea, [data-baseweb="select"] > div {
+        background-color: $surface;
+        color: $text;
+        border-color: $soft_border;
+    }
     </style>
-    """,
+    """
+).safe_substitute(theme_tokens)
+
+st.markdown(
+    theme_css,
     unsafe_allow_html=True,
 )
 
@@ -384,6 +442,15 @@ st.markdown(
 with st.sidebar:
     st.title("Job Search Agent")
     st.caption("AI workflow hub for resume matching, targeting, and application tracking.")
+    selected_theme = st.radio(
+        "Theme",
+        THEME_OPTIONS,
+        index=THEME_OPTIONS.index(st.session_state.get("theme_mode", "Light")),
+        horizontal=True,
+    )
+    if selected_theme != st.session_state.get("theme_mode"):
+        st.session_state["theme_mode"] = selected_theme
+        st.rerun()
     current_user = st.session_state.get("current_user")
     if current_user:
         display_name = " ".join(
@@ -475,8 +542,6 @@ with st.sidebar:
     )
 
     st.divider()
-    st.caption("MVP stack")
-    st.write("Python · Streamlit · OpenAI-ready · Modular services")
 
 
 resumes = load_structured_resumes()
