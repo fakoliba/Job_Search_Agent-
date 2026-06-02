@@ -75,7 +75,7 @@ app.py
 4. Add secrets in the Streamlit Cloud app settings using `.streamlit/secrets.toml.example` as the template.
 5. Keep `ENABLE_OPENAI_EMBEDDINGS = "false"` for a lower-cost demo, then enable it when you want OpenAI embedding-backed semantic scoring.
 
-The repository includes `packages.txt` so Streamlit Cloud installs the Linux libraries needed by Playwright/Chromium. On the first browser-rendered job discovery run, the app will install the Playwright Chromium browser binary if Streamlit Cloud has not cached it yet.
+The repository includes `packages.txt` so Streamlit Cloud installs the Linux libraries needed by Playwright/Chromium on its current Debian image. On the first browser-rendered job discovery run, the app will install the Playwright Chromium browser binary if Streamlit Cloud has not cached it yet.
 
 ### Demo Deployment Notes
 
