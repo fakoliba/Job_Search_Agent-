@@ -75,12 +75,14 @@ app.py
 4. Add secrets in the Streamlit Cloud app settings using `.streamlit/secrets.toml.example` as the template.
 5. Keep `ENABLE_OPENAI_EMBEDDINGS = "false"` for a lower-cost demo, then enable it when you want OpenAI embedding-backed semantic scoring.
 
+The repository includes `packages.txt` so Streamlit Cloud installs the Linux libraries needed by Playwright/Chromium. On the first browser-rendered job discovery run, the app will install the Playwright Chromium browser binary if Streamlit Cloud has not cached it yet.
+
 ### Demo Deployment Notes
 
 - Local JSON files are fine for a portfolio demo, but production should move users, applications, monitors, and resume metadata to Postgres or another managed database.
 - Uploaded resumes should move to object storage before a real multi-user launch.
 - Rotate any OpenAI key that was ever shared outside a private secret manager.
-- Browser-rendered job discovery may be limited on hosted platforms; keep it as a best-effort demo capability until it moves to a background worker.
+- Browser-rendered job discovery may still be limited by some careers sites; keep it as a best-effort demo capability until it moves to a background worker.
 
 ## Architecture Notes
 

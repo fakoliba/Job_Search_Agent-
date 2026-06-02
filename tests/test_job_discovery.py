@@ -21,6 +21,7 @@ from modules.job_discovery import (
     infer_card_location,
     infer_location,
     infer_title,
+    is_missing_playwright_browser_error,
     is_probable_rendered_card,
     job_from_cache_record,
     job_to_cache_record,
@@ -62,6 +63,12 @@ class JobDiscoveryTests(unittest.TestCase):
                 "json_ld_job_postings",
             ],
         )
+
+    def test_missing_playwright_browser_error_is_detected(self) -> None:
+        error = RuntimeError("BrowserType.launch: Executable doesn't exist. Please run playwright install.")
+
+        self.assertTrue(is_missing_playwright_browser_error(error))
+        self.assertFalse(is_missing_playwright_browser_error(RuntimeError("Navigation timeout")))
 
     def test_public_ats_classification_prioritizes_api_adapters(self) -> None:
         classification = classify_careers_site("https://jobs.lever.co/example")

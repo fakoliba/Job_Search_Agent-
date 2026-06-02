@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import re
 import json
+import subprocess
+import sys
 import time
 from dataclasses import asdict, dataclass
 from html import unescape
@@ -328,13 +330,17 @@ class RenderedJobCardAdapter(JobDiscoveryAdapter):
     def discover(self, context: DiscoveryContext) -> list[DiscoveredJob]:
         if not context.use_rendered_fallback:
             return []
-        return discover_jobs_with_playwright(
-            context.target,
-            context.resume,
-            max_jobs=context.max_jobs,
-            max_pages=context.max_pages,
-            job_query=context.job_query,
-        )
+        try:
+            return discover_jobs_with_playwright(
+                context.target,
+                context.resume,
+                max_jobs=context.max_jobs,
+                max_pages=context.max_pages,
+                job_query=context.job_query,
+            )
+        except RuntimeError as exc:
+            LAST_DISCOVERY_CACHE_EVENTS.append(f"{context.target.company}: rendered discovery unavailable: {exc}")
+            return []
 
 
 class JsonLdJobPostingAdapter(JobDiscoveryAdapter):
@@ -967,7 +973,7 @@ def discover_jobs_with_playwright(
 
     jobs: list[DiscoveredJob] = []
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True)
+        browser = launch_chromium_with_recovery(playwright)
         page = browser.new_page()
         network_payloads: list[object] = []
         page.on("response", lambda response: capture_network_json_response(response, network_payloads))
@@ -1014,6 +1020,43 @@ def discover_jobs_with_playwright(
             browser.close()
 
     return jobs
+
+
+def launch_chromium_with_recovery(playwright):
+    try:
+        return playwright.chromium.launch(headless=True)
+    except Exception as exc:
+        if not is_missing_playwright_browser_error(exc):
+            raise
+        install_playwright_chromium()
+        try:
+            return playwright.chromium.launch(headless=True)
+        except Exception as retry_exc:
+            raise RuntimeError(
+                "Chromium could not launch after installing Playwright browsers. "
+                "On Streamlit Cloud, redeploy the app after `packages.txt` is present."
+            ) from retry_exc
+
+
+def is_missing_playwright_browser_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "executable doesn't exist" in message or "playwright install" in message
+
+
+def install_playwright_chromium() -> None:
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "playwright", "install", "chromium"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            "Playwright Chromium is not installed and automatic install failed. "
+            "Redeploy after adding Streamlit Cloud browser dependencies, or disable browser-rendered discovery."
+        ) from exc
 
 
 def capture_network_json_response(response, payloads: list[object], max_payloads: int = 40) -> None:
