@@ -1768,7 +1768,7 @@ def is_probable_job_link(url: str, text: str) -> bool:
     has_job_detail_url = (
         "pid=" in query
         or "/careers/job" in path
-        or "/jobs/listing/" in path
+        or re.search(r"/jobs/listing/[a-z0-9_-]+(?:/[a-z0-9_-]+)?", path) is not None
         or is_meta_job_detail
         or re.search(r"/details/[a-z0-9_-]+/", path) is not None
         or (path.startswith("/careers/") and has_role_title)

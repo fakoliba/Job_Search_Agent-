@@ -209,10 +209,10 @@ class JobDiscoveryTests(unittest.TestCase):
         self.assertIn("jobs.apple.com", links[3][0])
         self.assertEqual(links[4][0], "https://example.com/jobs/listing/backend-engineer-ai-security/7826765")
 
-    def test_probable_job_link_accepts_stripe_listing_urls(self) -> None:
+    def test_probable_job_link_accepts_jobs_listing_detail_urls(self) -> None:
         self.assertTrue(
             is_probable_job_link(
-                "https://stripe.com/jobs/listing/backend-engineer-ai-security/7826765",
+                "https://example.com/jobs/listing/backend-engineer-ai-security/7826765",
                 "Backend Engineer, AI Security",
             )
         )
