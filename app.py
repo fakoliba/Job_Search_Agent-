@@ -1010,11 +1010,13 @@ elif page == "Job Discovery":
                 discovery_status.update(label="Job discovery failed.", state="error", expanded=True)
                 st.error(f"Could not discover jobs: {exc}")
 
-        discovered_jobs = [
+        raw_discovered_jobs = st.session_state.get("discovered_jobs", [])
+        filtered_discovered_jobs = [
             job
-            for job in st.session_state.get("discovered_jobs", [])
+            for job in raw_discovered_jobs
             if is_probable_job_link(job.url, job.title) or is_probable_rendered_card(job.url, job.title)
         ]
+        discovered_jobs = filtered_discovered_jobs or raw_discovered_jobs
         st.session_state["discovered_jobs"] = discovered_jobs
         if discovered_jobs:
             st.subheader("Ranked Job Matches")

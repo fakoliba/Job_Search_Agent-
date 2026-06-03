@@ -22,6 +22,7 @@ from modules.job_discovery import (
     infer_location,
     infer_title,
     is_missing_playwright_browser_error,
+    is_probable_job_link,
     is_probable_rendered_card,
     job_from_cache_record,
     job_to_cache_record,
@@ -196,15 +197,25 @@ class JobDiscoveryTests(unittest.TestCase):
         <a href="https://boards.greenhouse.io/acme/jobs/123">AI Platform Engineer</a>
         <a href="https://www.metacareers.com/profile/job_details/123">Software Engineer, Infrastructure</a>
         <a href="https://jobs.apple.com/en-us/details/200665933/os-performance-tools-engineer">OS Performance Tools Engineer</a>
+        <a href="/jobs/listing/backend-engineer-ai-security/7826765">Backend Engineer, AI Security</a>
         """
 
         links = extract_job_links(html, "https://example.com")
 
-        self.assertEqual(len(links), 4)
+        self.assertEqual(len(links), 5)
         self.assertEqual(links[0][0], "https://example.com/careers/job/software-engineer-123")
         self.assertIn("greenhouse", links[1][0])
         self.assertIn("metacareers", links[2][0])
         self.assertIn("jobs.apple.com", links[3][0])
+        self.assertEqual(links[4][0], "https://example.com/jobs/listing/backend-engineer-ai-security/7826765")
+
+    def test_probable_job_link_accepts_stripe_listing_urls(self) -> None:
+        self.assertTrue(
+            is_probable_job_link(
+                "https://stripe.com/jobs/listing/backend-engineer-ai-security/7826765",
+                "Backend Engineer, AI Security",
+            )
+        )
 
     def test_extract_job_links_rejects_marketing_careers_pages(self) -> None:
         html = """
