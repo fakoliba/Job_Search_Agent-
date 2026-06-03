@@ -18,6 +18,7 @@ A polished Streamlit MVP for managing and optimizing a technical job search with
 - Create local user accounts for separate job-search workspaces
 - Save and run job monitors for target company scans
 - Generate AI career coaching, personalized company targets, and market/salary intelligence
+- Generate company-aware interview prep for any company with optional known-company overlays
 
 ## Project Structure
 
@@ -99,6 +100,7 @@ The MVP keeps the application modular:
 - `interview.py` owns interview preparation generation.
 - `monitor.py` owns saved job monitors and new-role detection.
 - `career_intelligence.py` owns coaching, company targeting, trend, and salary planning logic.
+- `company_intelligence.py` owns generic company interview profiles, process inference, questions, and prep plans.
 
 This separation keeps the Streamlit app mostly orchestration and UX, making it easier to add FastAPI, ChromaDB, background job discovery, and agentic workflows later.
 

@@ -12,6 +12,7 @@ from modules.career_intelligence import (
     build_market_intelligence,
     recommend_target_companies,
 )
+from modules.company_intelligence import CompanyPrepRequest, build_company_interview_profile
 from modules.generator import (
     DraftRequest,
     generate_cover_letter,
@@ -520,6 +521,7 @@ with st.sidebar:
             "Application Tracker",
             "Job Monitoring",
             "Career Coach",
+            "Company Prep",
             "Company Targeting",
             "Market Intelligence",
             "Account Settings",
@@ -534,6 +536,7 @@ with st.sidebar:
             "Application Tracker": "Applications - Tracker",
             "Job Monitoring": "Monitor Jobs",
             "Career Coach": "Intelligence - Career Coach",
+            "Company Prep": "Intelligence - Company Prep",
             "Company Targeting": "Intelligence - Company Targeting",
             "Market Intelligence": "Intelligence - Market",
             "Account Settings": "Account - Settings",
@@ -1541,6 +1544,135 @@ elif page == "Career Coach":
         st.subheader("Next Best Actions")
         for action in coaching["next_actions"]:
             st.write(f"- {action}")
+
+
+elif page == "Company Prep":
+    render_page_header(
+        "Company Prep",
+        "Generate company-aware interview process, questions, resume stories, and readiness guidance for any target company.",
+    )
+
+    if not resumes:
+        st.warning("Add at least one resume before generating company prep.")
+    else:
+        selected_application = None
+        if applications:
+            job_options = ["Manual company / role"] + [get_application_label(application) for application in applications]
+            selected_job_label = st.selectbox("Prepare for saved job", job_options)
+            if selected_job_label != "Manual company / role":
+                selected_application = applications[job_options.index(selected_job_label) - 1]
+        else:
+            st.info("No saved jobs yet. You can still enter a company and role manually.")
+
+        labels = [get_resume_label(r) for r in resumes]
+        default_resume_index = 0
+        if selected_application and selected_application.get("resume_version") in labels:
+            default_resume_index = labels.index(selected_application["resume_version"])
+        selected_resume = resumes[
+            labels.index(st.selectbox("Resume version", labels, index=default_resume_index, key="company_prep_resume"))
+        ]
+
+        prep_a, prep_b = st.columns([0.42, 0.58])
+        with prep_a:
+            company = st.text_input(
+                "Company",
+                value=selected_application.get("company", "") if selected_application else "",
+            )
+            role_title = st.text_input(
+                "Role title",
+                value=selected_application.get("role_title", "") if selected_application else "",
+            )
+            careers_url = st.text_input(
+                "Company careers URL",
+                value=selected_application.get("job_url", "") if selected_application else "",
+                placeholder="https://example.com/careers",
+            )
+            prep_focus = st.selectbox(
+                "Prep focus",
+                ["Full Loop", "Coding", "System Design", "Behavioral", "Manager Screen"],
+            )
+        with prep_b:
+            job_description = st.text_area(
+                "Job description",
+                value=selected_application.get("job_description", "") if selected_application else "",
+                height=250,
+                placeholder="Paste the job description for better company and role inference.",
+            )
+
+        if st.button("Generate Company Prep", type="primary", disabled=not (company.strip() or role_title.strip() or job_description.strip())):
+            st.session_state["company_prep_profile"] = build_company_interview_profile(
+                CompanyPrepRequest(
+                    company=company,
+                    role_title=role_title,
+                    job_description=job_description,
+                    resume=selected_resume,
+                    careers_url=careers_url,
+                    prep_focus=prep_focus,
+                )
+            )
+
+        profile = st.session_state.get("company_prep_profile")
+        if profile:
+            summary_a, summary_b, summary_c, summary_d = st.columns(4)
+            with summary_a:
+                render_metric_card("Readiness", f"{profile['readiness']['overall']}%")
+            with summary_b:
+                render_metric_card("Company Type", profile["company_type"])
+            with summary_c:
+                render_metric_card("Role Family", profile["role_family"])
+            with summary_d:
+                render_metric_card("Confidence", profile["confidence"])
+
+            st.markdown("**Source Signals**")
+            render_skill_chips(profile["sources"], "No source signals available.", "match")
+
+            themes_col, notes_col = st.columns(2)
+            with themes_col:
+                st.markdown("**Interview Themes**")
+                for theme in profile["themes"]:
+                    st.write(f"- {theme}")
+            with notes_col:
+                st.markdown("**Company / Process Notes**")
+                for note in profile["process_notes"] or ["No company-specific notes available; using role and company-type inference."]:
+                    st.write(f"- {note}")
+
+            st.subheader("Likely Interview Process")
+            for round_info in profile["rounds"]:
+                with st.expander(f"{round_info['round']} - {round_info['source']}"):
+                    st.write(round_info["focus"])
+
+            readiness_a, readiness_b, readiness_c, readiness_d = st.columns(4)
+            with readiness_a:
+                render_metric_card("Coding", f"{profile['readiness']['coding']}%")
+            with readiness_b:
+                render_metric_card("System Design", f"{profile['readiness']['system_design']}%")
+            with readiness_c:
+                render_metric_card("Behavioral", f"{profile['readiness']['behavioral']}%")
+            with readiness_d:
+                render_metric_card("Company Knowledge", f"{profile['readiness']['company_knowledge']}%")
+
+            question_tab, story_tab, plan_tab = st.tabs(["Questions", "Resume Stories", "Prep Plan"])
+            with question_tab:
+                question_a, question_b = st.columns(2)
+                with question_a:
+                    st.markdown("**Technical / Domain Questions**")
+                    for question in profile["technical_questions"]:
+                        st.write(f"- {question}")
+                with question_b:
+                    st.markdown("**Behavioral Questions**")
+                    for question in profile["behavioral_questions"]:
+                        st.write(f"- {question}")
+            with story_tab:
+                for story in profile["resume_story_map"]:
+                    with st.expander(story["theme"]):
+                        st.write(story["story"])
+                        st.caption(story["how_to_use"])
+                st.markdown("**Questions To Ask Interviewers**")
+                for question in profile["questions_to_ask"]:
+                    st.write(f"- {question}")
+            with plan_tab:
+                for item in profile["study_plan"]:
+                    st.write(f"- {item}")
 
 
 elif page == "Company Targeting":
